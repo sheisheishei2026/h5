@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: #000;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .display {
+            text-align: right;
+            font-size: 72px;
+            font-weight: 300;
+            padding: 20px;
+            min-height: 140px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            color: white;
+            overflow: hidden;
+            word-break: break-all;
+            line-height: 1.1;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background-color: #333;
+            color: white;
+            font-size: 36px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            border: none;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.9);
+            opacity: 0.8;
+        }
+
+        .btn.operator {
+            background-color: #f1a33c;
+            color: white;
+        }
+
+        .btn.operator:active {
+            background-color: #ffb84d;
+        }
+
+        .btn.equal {
+            background-color: #f1a33c;
+            color: white;
+        }
+
+        .btn.equal:active {
+            background-color: #ffb84d;
+        }
+
+        .btn.clear {
+            background-color: #a5a5a5;
+            color: black;
+            font-weight: 500;
+        }
+
+        .btn.clear:active {
+            background-color: #bfbfbf;
+        }
+
+        .btn.delete {
+            background-color: #a5a5a5;
+            color: black;
+            font-weight: 500;
+        }
+
+        .btn.delete:active {
+            background-color: #bfbfbf;
+        }
+
+        .btn:not(.operator):not(.clear):not(.delete):not(.equal):active {
+            background-color: #4a4a4a;
+        }
+
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 50px;
+            aspect-ratio: 2 / 1;
+        }
+    </style>
+</head>
+<body>
+<div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+        <!-- 第一行 -->
+        <button class="btn clear" data-value="C">C</button>
+        <button class="btn delete" data-value="⌫">⌫</button>
+        <button class="btn operator" data-value="/">÷</button>
+        <button class="btn operator" data-value="*">×</button>
+
+        <!-- 第二行 -->
+        <button class="btn" data-value="7">7</button>
+        <button class="btn" data-value="8">8</button>
+        <button class="btn" data-value="9">9</button>
+        <button class="btn operator" data-value="-">−</button>
+
+        <!-- 第三行 -->
+        <button class="btn" data-value="4">4</button>
+        <button class="btn" data-value="5">5</button>
+        <button class="btn" data-value="6">6</button>
+        <button class="btn operator" data-value="-">−</button>
+
+        <!-- 第四行 -->
+        <button class="btn" data-value="1">1</button>
+        <button class="btn" data-value="2">2</button>
+        <button class="btn" data-value="3">3</button>
+        <button class="btn operator" data-value="+">+</button>
+
+        <!-- 第五行 -->
+        <button class="btn zero" data-value="0">0</button>
+        <button class="btn" data-value=".">.</button>
+        <button class="btn operator equal" data-value="=">=</button>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    let currentInput = '0';
+    let previousInput = '';
+    let operation = null;
+    let waitingForSecondOperand = false;
+
+    function inputDigit(digit) {
+        if (waitingForSecondOperand) {
+            currentInput = digit;
+            waitingForSecondOperand = false;
+        } else {
+            currentInput = currentInput === '0' ? digit : currentInput + digit;
+        }
+        updateDisplay();
+    }
+
+    function inputDecimal() {
+        if (waitingForSecondOperand) {
+            currentInput = '0.';
+            waitingForSecondOperand = false;
+            return;
+        }
+        if (!currentInput.includes('.')) {
+            currentInput += '.';
+        }
+        updateDisplay();
+    }
+
+    function clearAll() {
+        currentInput = '0';
+        previousInput = '';
+        operation = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+
+    function deleteLastChar() {
+        if (currentInput.length === 1 || currentInput === 'Error') {
+            currentInput = '0';
+        } else {
+            currentInput = currentInput.slice(0, -1);
+        }
+        updateDisplay();
+    }
+
+    function performOperation(nextOperation) {
+        const inputValue = parseFloat(currentInput);
+        if (isNaN(inputValue)) return;
+
+        if (previousInput === '') {
+            previousInput = currentInput;
+        } else if (operation) {
+            const currentValue = parseFloat(previousInput);
+            const newValue = calculate(currentValue, inputValue, operation);
+            currentInput = String(newValue);
+            previousInput = currentInput;
+        }
+
+        waitingForSecondOperand = true;
+        operation = nextOperation;
+        updateDisplay();
+    }
+
+    function calculate(first, second, op) {
+        switch (op) {
+            case '+': return first + second;
+            case '-': return first - second;
+            case '*': return first * second;
+            case '/':
+                if (second === 0) {
+                    return 'Error';
+                }
+                return first / second;
+            default: return second;
+        }
+    }
+
+    function handleEquals() {
+        if (!operation || waitingForSecondOperand) return;
+
+        const inputValue = parseFloat(currentInput);
+        if (isNaN(inputValue)) return;
+
+        const result = calculate(parseFloat(previousInput), inputValue, operation);
+        currentInput = String(result);
+        previousInput = '';
+        operation = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        let text = currentInput;
+        if (text === 'Error') {
+            display.textContent = 'Error';
+            return;
+        }
+        
+        const num = parseFloat(text);
+        if (!isNaN(num)) {
+            // 如果是整数且位数过多，使用科学计数法
+            if (Number.isInteger(num) && text.length > 9) {
+                text = num.toExponential(6).replace(/e\+?/, 'e');
+            } 
+            // 如果是小数，限制小数位数
+            else if (!Number.isInteger(num)) {
+                if (text.length > 12) {
+                    text = num.toPrecision(10);
+                }
+                // 移除末尾多余的0
+                text = text.replace(/\.?0+$/, '');
+            }
+        }
+        
+        // 如果文本仍然太长，缩小字体
+        if (text.length > 9) {
+            display.style.fontSize = '48px';
+        } else if (text.length > 6) {
+            display.style.fontSize = '60px';
+        } else {
+            display.style.fontSize = '72px';
+        }
+        
+        display.textContent = text;
+    }
+
+    document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const value = button.dataset.value;
+
+            if (value === 'C') {
+                clearAll();
+            } else if (value === '⌫') {
+                deleteLastChar();
+            } else if (value === '.') {
+                inputDecimal();
+            } else if (value === '=') {
+                handleEquals();
+            } else if (['+', '-', '*', '/'].includes(value)) {
+                performOperation(value);
+            } else {
+                inputDigit(value);
+            }
+        });
+    });
+
+    // 键盘支持
+    document.addEventListener('keydown', e => {
+        e.preventDefault();
+        const key = e.key;
+        if (/[0-9]/.test(key)) inputDigit(key);
+        else if (key === '.') inputDecimal();
+        else if (['+', '-', '*', '/'].includes(key)) performOperation(key);
+        else if (key === 'Enter' || key === '=') handleEquals();
+        else if (key === 'Escape') clearAll();
+        else if (key === 'Backspace') deleteLastChar();
+    });
+</script>
+</body>
+</html>

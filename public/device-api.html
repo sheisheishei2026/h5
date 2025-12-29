@@ -1,0 +1,2976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>H5设备能力调用</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=yes">
+    <!-- 引入jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .result-box.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .orientation-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .orientation-item {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .orientation-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .orientation-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .photo-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .photo-preview.show {
+            display: block;
+        }
+
+        .battery-visual {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .battery-bar {
+            width: 100%;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .battery-fill.low {
+            background: linear-gradient(90deg, #ff5252 0%, #ff7043 100%);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #4caf50;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .status-badge.error {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .vibrating {
+            animation: pulse 0.3s ease;
+        }
+
+        .motion-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .motion-item {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .motion-label {
+            font-size: 11px;
+            color: #00796b;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .motion-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00897b;
+        }
+
+        .speech-control {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .speech-btn {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #4fc3f7 0%, #0288d1 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .speech-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 136, 209, 0.3);
+        }
+
+        .speech-btn.recording {
+            background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+            animation: pulse 1s infinite;
+        }
+
+        .fullscreen-demo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .fullscreen-demo.active {
+            display: flex;
+        }
+
+        .fullscreen-demo h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .fullscreen-demo button {
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .notification-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-demo.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .wake-lock-status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #e8f5e9;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .wake-lock-status.active {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .page-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0);
+        }
+
+        .page-header.scrolled {
+            padding: 12px 20px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+
+        .page-header.scrolled h1 {
+            font-size: 20px;
+        }
+
+        .touch-visual {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .touch-point {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.6) 0%, rgba(102, 126, 234, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: touchFade 0.6s ease-out forwards;
+        }
+
+        @keyframes touchFade {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .haptic-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .haptic-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .haptic-btn:active {
+            transform: scale(0.95);
+        }
+
+        .canvas-draw {
+            width: 100%;
+            height: 200px;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            margin-top: 10px;
+            touch-action: none;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sensor-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .sensor-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d84315;
+            margin-top: 5px;
+        }
+
+        .gesture-area {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            touch-action: none;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .scroll-progress {
+            width: 100%;
+            height: 0%;
+            background: white;
+            transition: height 0.1s ease;
+        }
+
+        .install-prompt {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .install-prompt.show {
+            display: block;
+        }
+
+        .qr-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            word-break: break-all;
+            display: none;
+        }
+
+        .qr-result.show {
+            display: block;
+        }
+
+        .parallax-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+        }
+
+        .card-content {
+            transform: translateZ(20px);
+        }
+
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 40px;
+            margin-top: 10px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            height: 10px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            animation: wave 0.6s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.1s; }
+
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 35px; }
+        }
+
+        .voice-wave.hidden {
+            display: none;
+        }
+
+        .media-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .media-btn {
+            flex: 1;
+            padding: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .video-preview {
+            width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .video-preview.show {
+            display: block;
+        }
+
+        .gyro-visual {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .connection-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-right: 8px;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .connection-status.offline {
+            background: #f44336;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .feature-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #667eea;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00695c;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #00796b;
+            margin-top: 3px;
+        }
+
+        .keyboard-visual {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: monospace;
+            min-height: 60px;
+        }
+
+        .share-preview {
+            margin-top: 10px;
+            padding: 12px;
+            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
+            border-radius: 8px;
+            border-left: 4px solid #0288d1;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .bluetooth-device {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nfc-tag {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #f57f17;
+        }
+
+        .usb-device {
+            background: #f3e5f5;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 5px 0;
+            border-left: 3px solid #9c27b0;
+        }
+
+        .payment-status {
+            padding: 15px;
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .contact-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .pressure-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .pressure-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #ff5722 100%);
+            transition: width 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .gamepad-visual {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .gamepad-btn {
+            background: #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 11px;
+            transition: all 0.1s ease;
+        }
+
+        .gamepad-btn.pressed {
+            background: #667eea;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .geofence-map {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-dot {
+            width: 20px;
+            height: 20px;
+            background: #f44336;
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse-location 2s infinite;
+        }
+
+        @keyframes pulse-location {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(244, 67, 54, 0);
+            }
+        }
+
+        .ambient-temp {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .barcode-scanner {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scan-line {
+            width: 100%;
+            height: 2px;
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+            position: absolute;
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面头部 - 滚动联动效果 -->
+    <div class="page-header" id="pageHeader">
+        <h1>📱 H5设备能力调用</h1>
+    </div>
+
+    <!-- 滚动进度指示器 -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <div class="container">
+
+        <!-- 相机功能 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📷</span>
+                <span>相机拍照</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="openCamera()">拍照</button>
+                <button class="btn btn-secondary" onclick="openAlbum()">相册</button>
+            </div>
+            <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display:none" onchange="handlePhoto(event)">
+            <input type="file" id="albumInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+            <img id="photoPreview" class="photo-preview" alt="照片预览">
+        </div>
+
+        <!-- 地理位置 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📍</span>
+                <span>地理位置</span>
+            </div>
+            <button class="btn" onclick="getLocation()">获取当前位置</button>
+            <div id="locationResult" class="result-box empty">点击按钮获取位置信息</div>
+        </div>
+
+        <!-- 陀螺仪/重力感应 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎯</span>
+                <span>设备方向</span>
+                <span class="feature-badge">3D</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startOrientation()">开始监测</button>
+                <button class="btn btn-secondary" onclick="stopOrientation()">停止监测</button>
+            </div>
+            <div class="gyro-visual" id="gyroVisual">📱</div>
+            <div class="orientation-display">
+                <div class="orientation-item">
+                    <div class="orientation-label">Alpha (Z轴)</div>
+                    <div class="orientation-value" id="alpha">0°</div>
+                </div>
+                <div class="orientation-item">
+                    <div class="orientation-label">Beta (X轴)</div>
+                    <div class="orientation-value" id="beta">0°</div>
+                </div>
+                <div class="orientation-item">
+                    <div class="orientation-label">Gamma (Y轴)</div>
+                    <div class="orientation-value" id="gamma">0°</div>
+                </div>
+                <div class="orientation-item">
+                    <div class="orientation-label">屏幕方向</div>
+                    <div class="orientation-value" id="screenOrientation">竖屏</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 震动 -->
+        <div class="card" id="vibrateCard">
+            <div class="card-title">
+                <span class="card-icon">📳</span>
+                <span>设备震动</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="vibrateShort()">短震动</button>
+                <button class="btn" onclick="vibrateLong()">长震动</button>
+                <button class="btn btn-secondary" onclick="vibratePattern()">节奏震动</button>
+            </div>
+        </div>
+
+        <!-- 电池状态 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🔋</span>
+                <span>电池状态</span>
+            </div>
+            <button class="btn" onclick="getBattery()">获取电池信息</button>
+            <div class="battery-visual" id="batteryVisual" style="display:none;">
+                <div class="battery-bar">
+                    <div class="battery-fill" id="batteryFill">0%</div>
+                </div>
+                <div id="batteryInfo" class="result-box" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <!-- 设备信息 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📲</span>
+                <span>设备信息</span>
+            </div>
+            <button class="btn" onclick="getDeviceInfo()">获取设备信息</button>
+            <div id="deviceInfo" class="result-box empty">点击按钮获取设备信息</div>
+        </div>
+
+        <!-- 网络状态 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📶</span>
+                <span>网络状态</span>
+                <span class="connection-status" id="connectionStatus"></span>
+            </div>
+            <button class="btn" onclick="getNetworkInfo()">获取网络信息</button>
+            <div id="networkInfo" class="result-box empty">点击按钮获取网络状态</div>
+            <div class="stats-grid" style="margin-top: 10px;">
+                <div class="stat-item">
+                    <div class="stat-value" id="pingTime">-</div>
+                    <div class="stat-label">延迟(ms)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="downSpeed">-</div>
+                    <div class="stat-label">下行速度</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 剪贴板 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📋</span>
+                <span>剪贴板</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="copyToClipboard()">复制文本</button>
+                <button class="btn btn-secondary" onclick="readClipboard()">读取剪贴板</button>
+            </div>
+            <div id="clipboardResult" class="result-box empty">剪贴板操作结果</div>
+        </div>
+
+        <!-- 重力感应/加速度 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎢</span>
+                <span>重力感应</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startMotion()">开始监测</button>
+                <button class="btn btn-secondary" onclick="stopMotion()">停止监测</button>
+            </div>
+            <div class="motion-display">
+                <div class="motion-item">
+                    <div class="motion-label">X轴加速度</div>
+                    <div class="motion-value" id="motionX">0.0</div>
+                </div>
+                <div class="motion-item">
+                    <div class="motion-label">Y轴加速度</div>
+                    <div class="motion-value" id="motionY">0.0</div>
+                </div>
+                <div class="motion-item">
+                    <div class="motion-label">Z轴加速度</div>
+                    <div class="motion-value" id="motionZ">0.0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 语音识别 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎤</span>
+                <span>语音识别</span>
+                <span class="feature-badge">AI</span>
+            </div>
+            <div class="speech-control">
+                <button class="speech-btn" id="speechBtn" onclick="toggleSpeech()">开始录音</button>
+                <button class="speech-btn" onclick="speakText()">语音播报</button>
+            </div>
+            <div class="voice-wave hidden" id="voiceWave">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
+            <div id="speechResult" class="result-box empty">语音识别结果将显示在这里</div>
+        </div>
+
+        <!-- 全屏模式 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🖥️</span>
+                <span>全屏模式</span>
+            </div>
+            <button class="btn" onclick="toggleFullscreen()">进入全屏</button>
+        </div>
+
+        <!-- 屏幕唤醒锁 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">💡</span>
+                <span>屏幕常亮</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="requestWakeLock()">保持屏幕常亮</button>
+                <button class="btn btn-secondary" onclick="releaseWakeLock()">释放常亮</button>
+            </div>
+            <span id="wakeLockStatus" class="wake-lock-status">❌ 未激活</span>
+        </div>
+
+        <!-- 分享功能 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📤</span>
+                <span>系统分享</span>
+            </div>
+            <div class="share-options">
+                <button class="btn" onclick="shareText()">分享文本</button>
+                <button class="btn" onclick="shareUrl()">分享链接</button>
+            </div>
+            <div id="shareResult" class="result-box empty" style="margin-top:10px;">分享结果</div>
+        </div>
+
+        <!-- 通知权限 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🔔</span>
+                <span>系统通知</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="requestNotification()">请求权限</button>
+                <button class="btn btn-secondary" onclick="sendNotification()">发送通知</button>
+            </div>
+            <div id="notificationResult" class="result-box empty">通知状态</div>
+        </div>
+
+        <!-- 屏幕亮度 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">☀️</span>
+                <span>屏幕亮度</span>
+            </div>
+            <button class="btn" onclick="adjustBrightness()">调整亮度</button>
+            <div id="brightnessResult" class="result-box empty">亮度信息</div>
+        </div>
+
+        <!-- 触摸事件 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">👆</span>
+                <span>多点触摸</span>
+            </div>
+            <div class="touch-visual" id="touchVisual">
+                <div style="text-align: center; padding: 30px; color: #999;">在此区域触摸屏幕</div>
+            </div>
+            <div id="touchInfo" class="result-box empty" style="margin-top: 10px;">触摸信息将显示在这里</div>
+        </div>
+
+        <!-- 手势识别 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">✋</span>
+                <span>手势识别</span>
+            </div>
+            <div class="gesture-area" id="gestureArea">
+                👆 滑动试试
+            </div>
+            <div id="gestureResult" class="result-box empty" style="margin-top: 10px;">手势识别结果</div>
+        </div>
+
+        <!-- 触觉反馈 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎮</span>
+                <span>触觉反馈（Haptic）</span>
+            </div>
+            <div class="haptic-demo">
+                <button class="haptic-btn" onclick="hapticLight()">轻触</button>
+                <button class="haptic-btn" onclick="hapticMedium()">中触</button>
+                <button class="haptic-btn" onclick="hapticHeavy()">重触</button>
+                <button class="haptic-btn" onclick="hapticSuccess()">成功</button>
+            </div>
+        </div>
+
+        <!-- 手写画板 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎨</span>
+                <span>触摸绘画</span>
+            </div>
+            <canvas id="drawCanvas" class="canvas-draw"></canvas>
+            <div class="button-group" style="margin-top: 10px;">
+                <button class="btn" onclick="clearCanvas()">清空画板</button>
+                <button class="btn btn-secondary" onclick="saveCanvas()">保存图片</button>
+            </div>
+        </div>
+
+        <!-- 环境光感应 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">💡</span>
+                <span>环境光传感器</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startLightSensor()">开始监测</button>
+                <button class="btn btn-secondary" onclick="stopLightSensor()">停止监测</button>
+            </div>
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div style="font-size: 12px; color: #666;">光照强度</div>
+                    <div class="sensor-value" id="lightValue">0 lux</div>
+                </div>
+                <div class="sensor-card">
+                    <div style="font-size: 12px; color: #666;">环境状态</div>
+                    <div class="sensor-value" id="lightStatus" style="font-size: 16px;">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 距离传感器 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📏</span>
+                <span>距离传感器</span>
+            </div>
+            <button class="btn" onclick="startProximitySensor()">监测接近</button>
+            <div id="proximityResult" class="result-box empty" style="margin-top: 10px;">距离信息</div>
+        </div>
+
+        <!-- 二维码扫描 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📷</span>
+                <span>二维码扫描</span>
+            </div>
+            <button class="btn" onclick="scanQRCode()">📸 扫描二维码</button>
+            <div id="qrResult" class="qr-result"></div>
+            <input type="file" id="qrInput" accept="image/*" capture="environment" style="display:none" onchange="handleQRImage(event)">
+        </div>
+
+        <!-- 添加到主屏幕 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📲</span>
+                <span>PWA安装</span>
+            </div>
+            <button class="btn" onclick="promptInstall()">添加到主屏幕</button>
+            <div id="installPrompt" class="install-prompt">
+                ✅ 已支持安装为PWA应用
+            </div>
+        </div>
+
+        <!-- 屏幕方向锁定 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🔄</span>
+                <span>屏幕方向锁定</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="lockPortrait()">锁定竖屏</button>
+                <button class="btn" onclick="lockLandscape()">锁定横屏</button>
+                <button class="btn btn-secondary" onclick="unlockOrientation()">解除锁定</button>
+            </div>
+            <div id="orientationResult" class="result-box empty" style="margin-top: 10px;">方向锁定状态</div>
+        </div>
+
+        <!-- 性能监测 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🧠</span>
+                <span>性能监测</span>
+                <span class="feature-badge">实时</span>
+            </div>
+            <button class="btn" onclick="getPerformanceInfo()">获取性能信息</button>
+            <div id="performanceResult" class="result-box empty">性能数据</div>
+        </div>
+
+        <!-- 视频录制 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎥</span>
+                <span>视频录制</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startVideoRecording()">开始录制</button>
+                <button class="btn btn-secondary" onclick="stopVideoRecording()">停止录制</button>
+            </div>
+            <video id="videoPreview" class="video-preview" controls></video>
+            <div id="videoInfo" class="result-box empty" style="margin-top: 10px;">视频录制信息</div>
+        </div>
+
+        <!-- 音频录制 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎙️</span>
+                <span>音频录制</span>
+            </div>
+            <div class="media-controls">
+                <button class="media-btn" onclick="startAudioRecording()">⏺️ 录音</button>
+                <button class="media-btn" onclick="pauseAudioRecording()">⏸️ 暂停</button>
+                <button class="media-btn" onclick="stopAudioRecording()">⏹️ 停止</button>
+                <button class="media-btn" onclick="playAudio()">▶️ 播放</button>
+            </div>
+            <div id="audioInfo" class="result-box empty" style="margin-top: 10px;">录音时长: 0s</div>
+        </div>
+
+        <!-- 键盘事件 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">⌨️</span>
+                <span>虚拟键盘</span>
+            </div>
+            <input type="text" id="keyboardInput" placeholder="点击输入查看键盘信息" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+            <div class="keyboard-visual" id="keyboardInfo">键盘信息将显示在这里</div>
+        </div>
+
+        <!-- 页面统计 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📊</span>
+                <span>页面统计</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="scrollDistance">0</div>
+                    <div class="stat-label">滚动距离(px)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="touchCount">0</div>
+                    <div class="stat-label">触摸次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="timeOnPage">0s</div>
+                    <div class="stat-label">停留时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="apiCount">30+</div>
+                    <div class="stat-label">API总数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 蓝牙设备 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📡</span>
+                <span>蓝牙连接</span>
+                <span class="feature-badge">BLE</span>
+            </div>
+            <button class="btn" onclick="scanBluetooth()">扫描蓝牙设备</button>
+            <div id="bluetoothDevices" class="result-box empty" style="margin-top: 10px;">蓝牙设备列表</div>
+        </div>
+
+        <!-- NFC读取 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📱</span>
+                <span>NFC读写</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="readNFC()">读取NFC</button>
+                <button class="btn btn-secondary" onclick="writeNFC()">写入NFC</button>
+            </div>
+            <div id="nfcResult" class="result-box empty" style="margin-top: 10px;">NFC操作结果</div>
+        </div>
+
+        <!-- USB设备 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🔌</span>
+                <span>USB设备</span>
+            </div>
+            <button class="btn" onclick="connectUSB()">连接USB设备</button>
+            <div id="usbDevices" class="result-box empty" style="margin-top: 10px;">USB设备信息</div>
+        </div>
+
+        <!-- Web支付 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">💳</span>
+                <span>Web支付</span>
+            </div>
+            <button class="btn" onclick="requestPayment()">💰 发起支付</button>
+            <div id="paymentResult" class="result-box empty" style="margin-top: 10px;">支付状态</div>
+        </div>
+
+        <!-- 联系人访问 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📇</span>
+                <span>通讯录</span>
+            </div>
+            <button class="btn" onclick="pickContact()">选择联系人</button>
+            <div id="contactResult" class="result-box empty" style="margin-top: 10px;">联系人信息</div>
+        </div>
+
+        <!-- 触摸压力 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">👇</span>
+                <span>压力感应</span>
+                <span class="feature-badge">3D Touch</span>
+            </div>
+            <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; text-align: center;" id="pressureArea">
+                用力按压屏幕
+            </div>
+            <div class="pressure-bar">
+                <div class="pressure-fill" id="pressureFill" style="width: 0%">0%</div>
+            </div>
+        </div>
+
+        <!-- 游戏手柄 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🎮</span>
+                <span>游戏手柄</span>
+            </div>
+            <button class="btn" onclick="connectGamepad()">连接手柄</button>
+            <div class="gamepad-visual" id="gamepadButtons" style="display: none;">
+                <div class="gamepad-btn" id="btn0">A</div>
+                <div class="gamepad-btn" id="btn1">B</div>
+                <div class="gamepad-btn" id="btn2">X</div>
+                <div class="gamepad-btn" id="btn3">Y</div>
+            </div>
+            <div id="gamepadInfo" class="result-box empty" style="margin-top: 10px;">手柄信息</div>
+        </div>
+
+        <!-- 地理围栏 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🗺️</span>
+                <span>地理围栏</span>
+            </div>
+            <button class="btn" onclick="setupGeofence()">设置围栏监控</button>
+            <div class="geofence-map">
+                <div class="location-dot" id="locationDot"></div>
+                <span style="color: #00796b; font-weight: bold;">📍 监控区域</span>
+            </div>
+            <div id="geofenceResult" class="result-box empty" style="margin-top: 10px;">围栏状态</div>
+        </div>
+
+        <!-- 环境温度 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🌡️</span>
+                <span>温度传感器</span>
+            </div>
+            <button class="btn" onclick="readTemperature()">读取温度</button>
+            <div class="ambient-temp" id="tempDisplay">--°C</div>
+            <div id="tempInfo" class="result-box empty">温度传感器信息</div>
+        </div>
+
+        <!-- 条形码扫描 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📊</span>
+                <span>条形码扫描</span>
+            </div>
+            <button class="btn" onclick="scanBarcode()">扫描条形码</button>
+            <div class="barcode-scanner" id="barcodeScanner" style="display: none;">
+                <div class="scan-line"></div>
+                <span style="color: white; z-index: 1;">📷 扫描中...</span>
+            </div>
+            <div id="barcodeResult" class="result-box empty" style="margin-top: 10px;">扫描结果</div>
+        </div>
+
+        <!-- 屏幕录制 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🖥️</span>
+                <span>屏幕录制</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startScreenRecording()">开始录屏</button>
+                <button class="btn btn-secondary" onclick="stopScreenRecording()">停止录屏</button>
+            </div>
+            <div id="screenRecordInfo" class="result-box empty" style="margin-top: 10px;">录屏状态</div>
+        </div>
+
+        <!-- 文件系统 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">📁</span>
+                <span>文件系统</span>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="openFilePicker()">选择文件</button>
+                <button class="btn btn-secondary" onclick="saveToDisk()">保存文件</button>
+            </div>
+            <div id="fileSystemInfo" class="result-box empty" style="margin-top: 10px;">文件操作信息</div>
+        </div>
+
+        <!-- 闲置检测 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">💤</span>
+                <span>用户闲置检测</span>
+            </div>
+            <button class="btn" onclick="detectIdle()">开始检测闲置</button>
+            <div id="idleResult" class="result-box empty" style="margin-top: 10px;">闲置状态</div>
+        </div>
+
+        <!-- 后台同步 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="card-icon">🔄</span>
+                <span>后台同步</span>
+            </div>
+            <button class="btn" onclick="registerBackgroundSync()">注册后台任务</button>
+            <div id="syncResult" class="result-box empty" style="margin-top: 10px;">同步状态</div>
+        </div>
+
+        <!-- 开发者信息 -->
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-title" style="color: white;">
+                <span class="card-icon">💡</span>
+                <span>开发者提示</span>
+            </div>
+            <div style="line-height: 1.8; font-size: 14px;">
+                ✨ 本页面集成了45+移动端设备API<br>
+                📱 最佳体验请在真实手机上测试<br>
+                🔒 部分API需要HTTPS环境<br>
+                ⚡ 某些功能需要用户授权<br>
+                🌐 浏览器兼容性可能有差异
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏演示区域 -->
+    <div class="fullscreen-demo" id="fullscreenDemo">
+        <h2>🖥️ 全屏模式已激活</h2>
+        <p style="margin-bottom: 20px; font-size: 18px;">享受沉浸式体验</p>
+        <button onclick="exitFullscreen()">退出全屏</button>
+    </div>
+
+    <!-- 通知演示 -->
+    <div class="notification-demo" id="notificationDemo">
+        <h3 style="color: #667eea; margin-bottom: 10px;">🔔 H5通知</h3>
+        <p style="color: #666;">这是来自H5的系统通知！</p>
+    </div>
+
+    <script>
+        let orientationActive = false;
+
+        // 相机相册 - jQuery版本
+        function openCamera() {
+            $('#cameraInput').click();
+        }
+
+        function openAlbum() {
+            $('#albumInput').click();
+        }
+
+        function handlePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const $preview = $('#photoPreview');
+                    $preview.attr('src', e.target.result).addClass('show');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 地理位置
+        function getLocation() {
+            const $result = $('#locationResult');
+            $result.removeClass('empty').html('🔍 正在获取位置...');
+
+            if (!navigator.geolocation) {
+                $result.html('❌ 您的浏览器不支持地理位置API');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    $result.html(`
+                        ✅ <strong>位置获取成功</strong><br>
+                        📍 纬度: ${latitude.toFixed(6)}<br>
+                        📍 经度: ${longitude.toFixed(6)}<br>
+                        🎯 精度: ${accuracy.toFixed(2)}米<br>
+                        🕐 时间: ${new Date(position.timestamp).toLocaleString()}
+                    `);
+                },
+                (error) => {
+                    $result.html(`❌ 获取位置失败: ${error.message}`);
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
+
+        // 设备方向 - jQuery版本
+        function startOrientation() {
+            if (orientationActive) return;
+            
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            activateOrientation();
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                activateOrientation();
+            }
+        }
+
+        function activateOrientation() {
+            orientationActive = true;
+            window.addEventListener('deviceorientation', handleOrientation);
+            window.addEventListener('orientationchange', handleScreenOrientation);
+            handleScreenOrientation();
+        }
+
+        function handleOrientation(event) {
+            const alpha = event.alpha || 0;
+            const beta = event.beta || 0;
+            const gamma = event.gamma || 0;
+            
+            $('#alpha').text(alpha.toFixed(1) + '°');
+            $('#beta').text(beta.toFixed(1) + '°');
+            $('#gamma').text(gamma.toFixed(1) + '°');
+            
+            // 3D可视化效果
+            $('#gyroVisual').css('transform', `rotateX(${beta}deg) rotateY(${gamma}deg) rotateZ(${alpha}deg)`);
+        }
+
+        function handleScreenOrientation() {
+            const orientation = window.screen.orientation || {};
+            const type = orientation.type || window.orientation;
+            let text = '竖屏';
+            
+            if (type.toString().includes('landscape') || type === 90 || type === -90) {
+                text = '横屏';
+            }
+            
+            $('#screenOrientation').text(text);
+        }
+
+        function stopOrientation() {
+            orientationActive = false;
+            window.removeEventListener('deviceorientation', handleOrientation);
+            window.removeEventListener('orientationchange', handleScreenOrientation);
+        }
+
+        // 震动
+        function vibrateShort() {
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+                showVibrateEffect();
+            } else {
+                alert('您的设备不支持震动API');
+            }
+        }
+
+        function vibrateLong() {
+            if (navigator.vibrate) {
+                navigator.vibrate(1000);
+                showVibrateEffect();
+            }
+        }
+
+        function vibratePattern() {
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+                showVibrateEffect();
+            }
+        }
+
+        function showVibrateEffect() {
+            const card = document.getElementById('vibrateCard');
+            card.classList.add('vibrating');
+            setTimeout(() => card.classList.remove('vibrating'), 300);
+        }
+
+        // 电池状态 - jQuery版本
+        async function getBattery() {
+            if (!navigator.getBattery) {
+                alert('您的浏览器不支持电池API');
+                return;
+            }
+
+            try {
+                const battery = await navigator.getBattery();
+                updateBatteryDisplay(battery);
+
+                battery.addEventListener('levelchange', () => updateBatteryDisplay(battery));
+                battery.addEventListener('chargingchange', () => updateBatteryDisplay(battery));
+            } catch (error) {
+                alert('获取电池信息失败');
+            }
+        }
+
+        function updateBatteryDisplay(battery) {
+            const $visual = $('#batteryVisual');
+            const $fill = $('#batteryFill');
+            const $info = $('#batteryInfo');
+
+            $visual.css('display', 'block');
+
+            const level = (battery.level * 100).toFixed(0);
+            $fill.css('width', level + '%');
+            $fill.text(level + '%');
+            $fill.attr('class', 'battery-fill' + (battery.level < 0.2 ? ' low' : ''));
+
+            const chargingTime = battery.chargingTime === Infinity ? '未充电' : `${(battery.chargingTime / 60).toFixed(0)}分钟`;
+            const dischargingTime = battery.dischargingTime === Infinity ? 'N/A' : `${(battery.dischargingTime / 60).toFixed(0)}分钟`;
+
+            $info.html(`
+                🔋 电量: ${level}%<br>
+                ${battery.charging ? '⚡' : '🔌'} 状态: ${battery.charging ? '充电中' : '未充电'}<br>
+                ${battery.charging ? `⏱️ 充满时间: ${chargingTime}` : `⏱️ 剩余时间: ${dischargingTime}`}
+            `);
+        }
+
+        // 设备信息 - jQuery版本
+        function getDeviceInfo() {
+            const $info = $('#deviceInfo');
+            $info.attr('class', 'result-box');
+            
+            const ua = navigator.userAgent;
+            const platform = navigator.platform;
+            const language = navigator.language;
+            const online = navigator.onLine;
+            const cores = navigator.hardwareConcurrency || 'N/A';
+            const memory = navigator.deviceMemory || 'N/A';
+            const screen = `${window.screen.width} × ${window.screen.height}`;
+            const viewport = `${window.innerWidth} × ${window.innerHeight}`;
+
+            $info.html(`
+                📱 <strong>平台:</strong> ${platform}<br>
+                🌐 <strong>语言:</strong> ${language}<br>
+                💻 <strong>CPU核心:</strong> ${cores}<br>
+                🧠 <strong>内存:</strong> ${memory}GB<br>
+                📺 <strong>屏幕:</strong> ${screen}<br>
+                🖼️ <strong>视口:</strong> ${viewport}<br>
+                ${online ? '✅' : '❌'} <strong>网络:</strong> ${online ? '在线' : '离线'}<br>
+                <details style="margin-top:10px;">
+                    <summary style="cursor:pointer;color:#667eea;">查看完整UA</summary>
+                    <div style="margin-top:5px;font-size:12px;word-break:break-all;">${ua}</div>
+                </details>
+            `);
+        }
+
+        // 网络状态 - jQuery版本
+        function getNetworkInfo() {
+            const $info = $('#networkInfo');
+            $info.attr('class', 'result-box');
+
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            
+            if (!connection) {
+                $info.html('❌ 您的浏览器不支持网络信息API');
+                return;
+            }
+
+            const type = connection.effectiveType || 'unknown';
+            const downlink = connection.downlink || 'N/A';
+            const rtt = connection.rtt || 'N/A';
+            const saveData = connection.saveData ? '是' : '否';
+
+            $info.html(`
+                📶 <strong>网络类型:</strong> ${type.toUpperCase()}<br>
+                ⬇️ <strong>下行速度:</strong> ${downlink} Mbps<br>
+                ⏱️ <strong>往返延迟:</strong> ${rtt} ms<br>
+                💾 <strong>省流量模式:</strong> ${saveData}<br>
+                ${navigator.onLine ? '✅ 在线' : '❌ 离线'}
+            `);
+            
+            // 更新统计显示
+            $('#pingTime').text(rtt);
+            $('#downSpeed').text(downlink + ' Mbps');
+        }
+        
+        // 监听网络状态变化
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        function updateConnectionStatus() {
+            const $status = $('#connectionStatus');
+            if (navigator.onLine) {
+                $status.removeClass('offline');
+            } else {
+                $status.addClass('offline');
+            }
+        }
+        updateConnectionStatus();
+
+        // 剪贴板 - jQuery版本
+        async function copyToClipboard() {
+            const text = '这是通过H5 Clipboard API复制的文本 📋';
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                const $result = $('#clipboardResult');
+                $result.attr('class', 'result-box');
+                $result.html(`✅ 已复制到剪贴板:<br>"${text}"`);
+            } catch (err) {
+                alert('复制失败，请检查权限');
+            }
+        }
+
+        async function readClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const $result = $('#clipboardResult');
+                $result.attr('class', 'result-box');
+                $result.html(`✅ 剪贴板内容:<br>"${text || '(空)'}"`);
+            } catch (err) {
+                alert('读取失败，请检查权限');
+            }
+        }
+
+        // 监听网络状态变化
+        window.addEventListener('online', () => console.log('网络已连接'));
+        window.addEventListener('offline', () => console.log('网络已断开'));
+
+        // 重力感应/加速度 - jQuery版本
+        let motionActive = false;
+
+        function startMotion() {
+            if (motionActive) return;
+
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            activateMotion();
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                activateMotion();
+            }
+        }
+
+        function activateMotion() {
+            motionActive = true;
+            window.addEventListener('devicemotion', handleMotion);
+        }
+
+        function handleMotion(event) {
+            const acc = event.accelerationIncludingGravity;
+            if (acc) {
+                $('#motionX').text((acc.x || 0).toFixed(2));
+                $('#motionY').text((acc.y || 0).toFixed(2));
+                $('#motionZ').text((acc.z || 0).toFixed(2));
+            }
+        }
+
+        function stopMotion() {
+            motionActive = false;
+            window.removeEventListener('devicemotion', handleMotion);
+        }
+
+        // 语音识别 - jQuery版本
+        let recognition = null;
+        let isRecording = false;
+
+        function toggleSpeech() {
+            const $btn = $('#speechBtn');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('您的浏览器不支持语音识别API');
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                $btn.text('开始录音');
+                $btn.removeClass('recording');
+                isRecording = false;
+                $('#voiceWave').addClass('hidden');
+            } else {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'zh-CN';
+                recognition.continuous = true;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    $btn.text('🎤 录音中...');
+                    $btn.addClass('recording');
+                    isRecording = true;
+                    $('#speechResult').html('👂 正在聆听...');
+                    $('#voiceWave').removeClass('hidden');
+                };
+
+                recognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    $('#speechResult').html(`✅ 识别结果: ${transcript}`);
+                };
+
+                recognition.onerror = (event) => {
+                    $('#speechResult').html(`❌ 错误: ${event.error}`);
+                    $btn.text('开始录音');
+                    $btn.removeClass('recording');
+                    isRecording = false;
+                    $('#voiceWave').addClass('hidden');
+                };
+
+                recognition.start();
+            }
+        }
+
+        // 语音播报 - jQuery版本
+        function speakText() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的浏览器不支持语音合成');
+                return;
+            }
+
+            const text = '这是通过H5语音合成API播报的文本，欢迎使用设备能力演示页面';
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            utterance.onstart = () => {
+                $('#speechResult').html('🔊 正在播报...');
+            };
+
+            utterance.onend = () => {
+                $('#speechResult').html('✅ 播报完成');
+            };
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // 全屏模式 - jQuery版本
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+                $('#fullscreenDemo').addClass('active');
+            } else {
+                exitFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            $('#fullscreenDemo').removeClass('active');
+        }
+
+        // 屏幕唤醒锁 - jQuery版本
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) {
+                alert('您的浏览器不支持屏幕唤醒锁API');
+                return;
+            }
+
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                $('#wakeLockStatus').text('✅ 屏幕常亮已激活');
+                $('#wakeLockStatus').addClass('active');
+
+                wakeLock.addEventListener('release', () => {
+                    $('#wakeLockStatus').text('❌ 未激活');
+                    $('#wakeLockStatus').removeClass('active');
+                });
+            } catch (err) {
+                alert('无法激活屏幕常亮: ' + err.message);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // 分享功能
+        async function shareText() {
+            if (!navigator.share) {
+                document.getElementById('shareResult').innerHTML = '❌ 您的浏览器不支持分享API';
+                return;
+            }
+
+            try {
+                await navigator.share({
+                    title: 'H5设备能力演示',
+                    text: '这是一个展示H5设备API能力的页面',
+                });
+                document.getElementById('shareResult').innerHTML = '✅ 分享成功';
+            } catch (err) {
+                document.getElementById('shareResult').innerHTML = '❌ 分享取消或失败';
+            }
+        }
+
+        async function shareUrl() {
+            if (!navigator.share) {
+                document.getElementById('shareResult').innerHTML = '❌ 您的浏览器不支持分享API';
+                return;
+            }
+
+            try {
+                await navigator.share({
+                    title: 'H5设备能力演示',
+                    text: '快来体验H5的强大设备能力！',
+                    url: window.location.href,
+                });
+                document.getElementById('shareResult').innerHTML = '✅ 分享成功';
+            } catch (err) {
+                document.getElementById('shareResult').innerHTML = '❌ 分享取消或失败';
+            }
+        }
+
+        // 系统通知
+        function requestNotification() {
+            if (!('Notification' in window)) {
+                document.getElementById('notificationResult').innerHTML = '❌ 您的浏览器不支持通知API';
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                const result = document.getElementById('notificationResult');
+                if (permission === 'granted') {
+                    result.innerHTML = '✅ 通知权限已授予';
+                } else if (permission === 'denied') {
+                    result.innerHTML = '❌ 通知权限被拒绝';
+                } else {
+                    result.innerHTML = '⚠️ 通知权限待定';
+                }
+            });
+        }
+
+        function sendNotification() {
+            if (!('Notification' in window)) {
+                alert('您的浏览器不支持通知');
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('H5设备能力', {
+                    body: '这是来自H5的系统通知！',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📱</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+
+                // 页面内通知演示
+                const demo = document.getElementById('notificationDemo');
+                demo.classList.add('show');
+                setTimeout(() => demo.classList.remove('show'), 3000);
+            } else {
+                alert('请先授予通知权限');
+            }
+        }
+
+        // 屏幕亮度（部分浏览器支持）
+        async function adjustBrightness() {
+            const result = document.getElementById('brightnessResult');
+            
+            if ('screen' in window && 'brightness' in window.screen) {
+                try {
+                    const brightness = await window.screen.brightness;
+                    result.innerHTML = `当前亮度: ${(brightness * 100).toFixed(0)}%`;
+                } catch (err) {
+                    result.innerHTML = '❌ 无法获取亮度信息';
+                }
+            } else {
+                result.innerHTML = '❌ 您的浏览器不支持亮度API（实验性功能）';
+            }
+        }
+
+        // 页面可见性监听
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('页面已隐藏');
+            } else {
+                console.log('页面已显示');
+            }
+        });
+
+        // 滚动处理 - 滚动联动效果
+        function handleScroll() {
+            const $header = $('#pageHeader');
+            const scrollTop = $(window).scrollTop();
+            
+            // 标题栏滚动联动
+            if (scrollTop > 50) {
+                $header.addClass('scrolled');
+            } else {
+                $header.removeClass('scrolled');
+            }
+
+            // 滚动进度
+            const winHeight = $(document).height() - $(window).height();
+            const scrolled = (scrollTop / winHeight) * 100;
+            $('#scrollProgress').css('height', scrolled + '%');
+            
+            // 更新统计
+            $('#scrollDistance').text(scrollTop.toFixed(0));
+        }
+
+        // 页面统计
+        function startStats() {
+            setInterval(function() {
+                const timeOnPage = ((Date.now() - DeviceAPI.state.pageStartTime) / 1000).toFixed(0);
+                $('#timeOnPage').text(timeOnPage + 's');
+            }, 1000);
+        }
+
+        // 多点触摸事件
+        const touchVisual = document.getElementById('touchVisual');
+        const touchInfo = document.getElementById('touchInfo');
+
+        touchVisual.addEventListener('touchstart', handleTouch);
+        touchVisual.addEventListener('touchmove', handleTouch);
+        touchVisual.addEventListener('touchend', handleTouchEnd);
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touches = e.touches;
+            touchInfo.className = 'result-box';
+            touchInfo.innerHTML = `
+                👆 <strong>触摸点数:</strong> ${touches.length}<br>
+                ${Array.from(touches).map((touch, i) => 
+                    `<strong>点${i+1}:</strong> X:${touch.clientX.toFixed(0)}, Y:${touch.clientY.toFixed(0)}`
+                ).join('<br>')}
+            `;
+
+            // 可视化触摸点
+            Array.from(touches).forEach(touch => {
+                const point = document.createElement('div');
+                point.className = 'touch-point';
+                const rect = touchVisual.getBoundingClientRect();
+                point.style.left = (touch.clientX - rect.left - 20) + 'px';
+                point.style.top = (touch.clientY - rect.top - 20) + 'px';
+                touchVisual.appendChild(point);
+                setTimeout(() => point.remove(), 600);
+            });
+        }
+
+        function handleTouchEnd(e) {
+            if (e.touches.length === 0) {
+                setTimeout(() => {
+                    touchInfo.className = 'result-box empty';
+                    touchInfo.innerHTML = '触摸信息将显示在这里';
+                }, 1000);
+            }
+        }
+
+        // 手势识别
+        const gestureArea = document.getElementById('gestureArea');
+        const gestureResult = document.getElementById('gestureResult');
+        let gestureStartX = 0, gestureStartY = 0;
+        let gestureEndX = 0, gestureEndY = 0;
+
+        gestureArea.addEventListener('touchstart', (e) => {
+            gestureStartX = e.touches[0].clientX;
+            gestureStartY = e.touches[0].clientY;
+        });
+
+        gestureArea.addEventListener('touchend', (e) => {
+            gestureEndX = e.changedTouches[0].clientX;
+            gestureEndY = e.changedTouches[0].clientY;
+            detectGesture();
+        });
+
+        function detectGesture() {
+            const deltaX = gestureEndX - gestureStartX;
+            const deltaY = gestureEndY - gestureStartY;
+            const threshold = 50;
+
+            let gesture = '';
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > threshold) gesture = '👉 向右滑动';
+                else if (deltaX < -threshold) gesture = '👈 向左滑动';
+            } else {
+                if (deltaY > threshold) gesture = '👇 向下滑动';
+                else if (deltaY < -threshold) gesture = '👆 向上滑动';
+            }
+
+            if (gesture) {
+                gestureResult.className = 'result-box';
+                gestureResult.innerHTML = `✅ 检测到手势: <strong>${gesture}</strong>`;
+                gestureArea.textContent = gesture;
+                setTimeout(() => {
+                    gestureArea.textContent = '👆 滑动试试';
+                }, 1000);
+            }
+        }
+
+        // 触觉反馈（Haptic Feedback）
+        function hapticLight() {
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        }
+
+        function hapticMedium() {
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+        }
+
+        function hapticHeavy() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function hapticSuccess() {
+            if (navigator.vibrate) {
+                navigator.vibrate([10, 50, 10]);
+            }
+        }
+
+        // 触摸绘画
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // 设置canvas尺寸
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('touchend', () => {
+            isDrawing = false;
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveCanvas() {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `drawing_${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // 环境光传感器
+        let lightSensor = null;
+
+        async function startLightSensor() {
+            if (!('AmbientLightSensor' in window)) {
+                alert('您的设备不支持环境光传感器API');
+                return;
+            }
+
+            try {
+                lightSensor = new AmbientLightSensor();
+                lightSensor.addEventListener('reading', () => {
+                    const lux = lightSensor.illuminance;
+                    document.getElementById('lightValue').textContent = lux.toFixed(0) + ' lux';
+                    
+                    let status = '';
+                    if (lux < 50) status = '😴 黑暗';
+                    else if (lux < 200) status = '🌙 昏暗';
+                    else if (lux < 1000) status = '💡 正常';
+                    else status = '☀️ 明亮';
+                    
+                    document.getElementById('lightStatus').textContent = status;
+                });
+                lightSensor.start();
+            } catch (error) {
+                alert('无法启动环境光传感器: ' + error.message);
+            }
+        }
+
+        function stopLightSensor() {
+            if (lightSensor) {
+                lightSensor.stop();
+            }
+        }
+
+        // 距离传感器
+        function startProximitySensor() {
+            const result = document.getElementById('proximityResult');
+            
+            if (!('ProximitySensor' in window)) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的设备不支持距离传感器API（实验性功能）';
+                return;
+            }
+
+            try {
+                const sensor = new ProximitySensor();
+                sensor.addEventListener('reading', () => {
+                    result.className = 'result-box';
+                    result.innerHTML = `
+                        📏 <strong>距离:</strong> ${sensor.distance} cm<br>
+                        ${sensor.near ? '👋 物体接近' : '👌 物体远离'}
+                    `;
+                });
+                sensor.start();
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 无法启动距离传感器: ' + error.message;
+            }
+        }
+
+        // 二维码扫描（使用相机拍照后识别）
+        function scanQRCode() {
+            document.getElementById('qrInput').click();
+        }
+
+        function handleQRImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const result = document.getElementById('qrResult');
+            result.className = 'qr-result show';
+            result.innerHTML = '🔍 正在识别二维码...';
+
+            // 这里需要使用第三方库如jsQR来解析二维码
+            // 简化演示，显示提示信息
+            setTimeout(() => {
+                result.innerHTML = '💡 提示: 实际应用中需要集成jsQR库来解析二维码图片';
+            }, 1000);
+        }
+
+        // PWA安装提示
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.add('show');
+        });
+
+        function promptInstall() {
+            if (!deferredPrompt) {
+                alert('当前浏览器不支持PWA安装，或已安装');
+                return;
+            }
+
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('用户接受了安装');
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        // 屏幕方向锁定
+        async function lockPortrait() {
+            try {
+                await screen.orientation.lock('portrait');
+                document.getElementById('orientationResult').innerHTML = '✅ 已锁定为竖屏模式';
+            } catch (error) {
+                alert('无法锁定屏幕方向: ' + error.message);
+            }
+        }
+
+        async function lockLandscape() {
+            try {
+                await screen.orientation.lock('landscape');
+                document.getElementById('orientationResult').innerHTML = '✅ 已锁定为横屏模式';
+            } catch (error) {
+                alert('无法锁定屏幕方向: ' + error.message);
+            }
+        }
+
+        function unlockOrientation() {
+            try {
+                screen.orientation.unlock();
+                document.getElementById('orientationResult').innerHTML = '✅ 已解除方向锁定';
+            } catch (error) {
+                alert('无法解锁屏幕方向');
+            }
+        }
+
+        // 性能监测
+        function getPerformanceInfo() {
+            const $result = $('#performanceResult');
+            $result.removeClass('empty');
+            
+            const memory = performance.memory || {};
+            const navigation = performance.navigation;
+            const timing = performance.timing;
+            
+            const loadTime = timing.loadEventEnd - timing.navigationStart;
+            const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
+            
+            $result.html(`
+                🧠 <strong>JS内存:</strong> ${(memory.usedJSHeapSize / 1048576).toFixed(2)} MB / ${(memory.totalJSHeapSize / 1048576).toFixed(2)} MB<br>
+                ⚡ <strong>页面加载:</strong> ${loadTime}ms<br>
+                📄 <strong>DOM就绪:</strong> ${domReady}ms<br>
+                🔄 <strong>导航类型:</strong> ${navigation.type === 0 ? '正常加载' : navigation.type === 1 ? '刷新' : '历史记录'}<br>
+                💻 <strong>CPU核心:</strong> ${navigator.hardwareConcurrency || 'N/A'}<br>
+                🎨 <strong>渲染帧率:</strong> ~60 FPS
+            `);
+        }
+        
+        // 视频录制
+        async function startVideoRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                DeviceAPI.state.mediaRecorder = new MediaRecorder(stream);
+                DeviceAPI.state.recordedChunks = [];
+                
+                DeviceAPI.state.mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        DeviceAPI.state.recordedChunks.push(event.data);
+                    }
+                };
+                
+                DeviceAPI.state.mediaRecorder.onstop = () => {
+                    const blob = new Blob(DeviceAPI.state.recordedChunks, { type: 'video/webm' });
+                    const $videoPreview = $('#videoPreview');
+                    $videoPreview.attr('src', URL.createObjectURL(blob)).addClass('show');
+                    
+                    const $info = $('#videoInfo');
+                    $info.removeClass('empty').html(`✅ 录制完成<br>📦 大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                DeviceAPI.state.mediaRecorder.start();
+                $('#videoInfo').html('🔴 正在录制视频...');
+            } catch (error) {
+                alert('无法访问摄像头: ' + error.message);
+            }
+        }
+        
+        function stopVideoRecording() {
+            if (DeviceAPI.state.mediaRecorder && DeviceAPI.state.mediaRecorder.state !== 'inactive') {
+                DeviceAPI.state.mediaRecorder.stop();
+            }
+        }
+        
+        // 音频录制
+        async function startAudioRecording() {
+            try {
+                DeviceAPI.state.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                DeviceAPI.state.audioRecorder = new MediaRecorder(DeviceAPI.state.audioStream);
+                DeviceAPI.state.audioChunks = [];
+                DeviceAPI.state.recordingStartTime = Date.now();
+                
+                DeviceAPI.state.audioRecorder.ondataavailable = (event) => {
+                    DeviceAPI.state.audioChunks.push(event.data);
+                };
+                
+                DeviceAPI.state.audioRecorder.onstop = () => {
+                    const blob = new Blob(DeviceAPI.state.audioChunks, { type: 'audio/webm' });
+                    window.audioBlob = blob;
+                    
+                    const duration = ((Date.now() - DeviceAPI.state.recordingStartTime) / 1000).toFixed(1);
+                    const $info = $('#audioInfo');
+                    $info.removeClass('empty').html(`✅ 录音完成<br>⏱️ 时长: ${duration}s<br>📦 大小: ${(blob.size / 1024).toFixed(2)} KB`);
+                    
+                    clearInterval(DeviceAPI.state.recordingTimer);
+                };
+                
+                DeviceAPI.state.audioRecorder.start();
+                $('#audioInfo').html('🔴 正在录音: 0s');
+                
+                DeviceAPI.state.recordingTimer = setInterval(() => {
+                    const duration = ((Date.now() - DeviceAPI.state.recordingStartTime) / 1000).toFixed(0);
+                    $('#audioInfo').html(`🔴 正在录音: ${duration}s`);
+                }, 1000);
+            } catch (error) {
+                alert('无法访问麦克风: ' + error.message);
+            }
+        }
+        
+        function pauseAudioRecording() {
+            if (DeviceAPI.state.audioRecorder && DeviceAPI.state.audioRecorder.state === 'recording') {
+                DeviceAPI.state.audioRecorder.pause();
+                clearInterval(DeviceAPI.state.recordingTimer);
+                $('#audioInfo').html('⏸️ 录音已暂停');
+            } else if (DeviceAPI.state.audioRecorder && DeviceAPI.state.audioRecorder.state === 'paused') {
+                DeviceAPI.state.audioRecorder.resume();
+                DeviceAPI.state.recordingTimer = setInterval(() => {
+                    const duration = ((Date.now() - DeviceAPI.state.recordingStartTime) / 1000).toFixed(0);
+                    $('#audioInfo').html(`🔴 正在录音: ${duration}s`);
+                }, 1000);
+            }
+        }
+        
+        function stopAudioRecording() {
+            if (DeviceAPI.state.audioRecorder && DeviceAPI.state.audioRecorder.state !== 'inactive') {
+                DeviceAPI.state.audioRecorder.stop();
+                if (DeviceAPI.state.audioStream) {
+                    DeviceAPI.state.audioStream.getTracks().forEach(track => track.stop());
+                }
+            }
+        }
+        
+        function playAudio() {
+            if (window.audioBlob) {
+                const audio = new Audio(URL.createObjectURL(window.audioBlob));
+                audio.play();
+            } else {
+                alert('请先录制音频');
+            }
+        }
+        
+        // 键盘监听
+        const keyboardInput = document.getElementById('keyboardInput');
+        const keyboardInfo = document.getElementById('keyboardInfo');
+        
+        keyboardInput.addEventListener('focus', () => {
+            keyboardInfo.textContent = '⌨️ 虚拟键盘已打开';
+        });
+        
+        keyboardInput.addEventListener('blur', () => {
+            keyboardInfo.textContent = '键盘已关闭';
+        });
+        
+        keyboardInput.addEventListener('input', (e) => {
+            keyboardInfo.innerHTML = `
+                📝 输入内容: "${e.target.value}"<br>
+                📏 长度: ${e.target.value.length} 字符
+            `;
+        });
+        
+        // 页面统计
+        let totalTouches = 0;
+        let pageStartTime = Date.now();
+        
+        document.addEventListener('touchstart', () => {
+            totalTouches++;
+            document.getElementById('touchCount').textContent = totalTouches;
+        });
+        
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            document.getElementById('scrollDistance').textContent = scrollTop.toFixed(0);
+        });
+        
+        setInterval(() => {
+            const timeOnPage = ((Date.now() - pageStartTime) / 1000).toFixed(0);
+            document.getElementById('timeOnPage').textContent = timeOnPage + 's';
+        }, 1000);
+        
+        // 蓝牙设备
+        async function scanBluetooth() {
+            const result = document.getElementById('bluetoothDevices');
+            
+            if (!navigator.bluetooth) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的浏览器不支持Web Bluetooth API';
+                return;
+            }
+            
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['battery_service']
+                });
+                
+                result.className = 'result-box';
+                result.innerHTML = `
+                    <div class="bluetooth-device">
+                        <div>
+                            <strong>📱 ${device.name || '未命名设备'}</strong><br>
+                            <small>ID: ${device.id}</small>
+                        </div>
+                        <span style="color: #4caf50;">✓ 已连接</span>
+                    </div>
+                `;
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 蓝牙扫描取消或失败';
+            }
+        }
+        
+        // NFC读写
+        async function readNFC() {
+            const result = document.getElementById('nfcResult');
+            
+            if (!('NDEFReader' in window)) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的设备不支持Web NFC API';
+                return;
+            }
+            
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                
+                result.className = 'result-box';
+                result.innerHTML = '📱 正在等待NFC标签...';
+                
+                ndef.addEventListener('reading', ({ message, serialNumber }) => {
+                    result.innerHTML = `
+                        <div class="nfc-tag">
+                            ✅ NFC标签已读取<br>
+                            序列号: ${serialNumber}
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ NFC读取失败: ' + error.message;
+            }
+        }
+        
+        async function writeNFC() {
+            if (!('NDEFReader' in window)) {
+                alert('您的设备不支持Web NFC');
+                return;
+            }
+            
+            try {
+                const ndef = new NDEFReader();
+                await ndef.write('Hello from Web NFC!');
+                document.getElementById('nfcResult').innerHTML = '✅ NFC写入成功';
+            } catch (error) {
+                alert('NFC写入失败');
+            }
+        }
+        
+        // USB设备
+        async function connectUSB() {
+            const result = document.getElementById('usbDevices');
+            
+            if (!navigator.usb) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的浏览器不支持WebUSB API';
+                return;
+            }
+            
+            try {
+                const device = await navigator.usb.requestDevice({ filters: [] });
+                await device.open();
+                
+                result.className = 'result-box';
+                result.innerHTML = `
+                    <div class="usb-device">
+                        <strong>🔌 ${device.productName || 'USB设备'}</strong><br>
+                        制造商: ${device.manufacturerName || 'Unknown'}<br>
+                        序列号: ${device.serialNumber || 'N/A'}
+                    </div>
+                `;
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ USB连接取消或失败';
+            }
+        }
+        
+        // Web支付
+        async function requestPayment() {
+            const result = document.getElementById('paymentResult');
+            
+            if (!window.PaymentRequest) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的浏览器不支持Payment Request API';
+                return;
+            }
+            
+            const methodData = [{
+                supportedMethods: 'basic-card',
+                data: {
+                    supportedNetworks: ['visa', 'mastercard']
+                }
+            }];
+            
+            const details = {
+                total: {
+                    label: '测试商品',
+                    amount: { currency: 'CNY', value: '0.01' }
+                }
+            };
+            
+            try {
+                const request = new PaymentRequest(methodData, details);
+                const response = await request.show();
+                await response.complete('success');
+                
+                result.className = 'result-box';
+                result.innerHTML = `
+                    <div class="payment-status">
+                        ✅ 支付成功<br>
+                        金额: ¥0.01
+                    </div>
+                `;
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 支付取消或失败';
+            }
+        }
+        
+        // 联系人选择
+        async function pickContact() {
+            const result = document.getElementById('contactResult');
+            
+            if (!('contacts' in navigator)) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 您的浏览器不支持Contact Picker API';
+                return;
+            }
+            
+            try {
+                const props = ['name', 'tel'];
+                const contacts = await navigator.contacts.select(props, { multiple: false });
+                
+                if (contacts.length > 0) {
+                    const contact = contacts[0];
+                    result.className = 'result-box';
+                    result.innerHTML = `
+                        <div class="contact-item">
+                            📇 <strong>${contact.name?.[0] || '未知'}</strong><br>
+                            📞 ${contact.tel?.[0] || '无电话'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result-box';
+                result.innerHTML = '❌ 联系人选择取消';
+            }
+        }
+        
+        // 压力感应
+        function handlePressure(e) {
+            e.preventDefault();
+            const touch = e.originalEvent.touches[0];
+            const force = touch.force || 0;
+            const pressure = (force * 100).toFixed(0);
+            
+            $('#pressureFill').css('width', pressure + '%').text(pressure + '%');
+        }
+        
+        // 游戏手柄
+        function connectGamepad() {
+            const $info = $('#gamepadInfo');
+            const $buttons = $('#gamepadButtons');
+            
+            window.addEventListener('gamepadconnected', (e) => {
+                $info.removeClass('empty').html(`✅ 手柄已连接: ${e.gamepad.id}`);
+                $buttons.show();
+                
+                DeviceAPI.state.gamepadInterval = setInterval(() => {
+                    const gamepads = navigator.getGamepads();
+                    const gamepad = gamepads[0];
+                    
+                    if (gamepad) {
+                        gamepad.buttons.forEach((button, i) => {
+                            const $btn = $(`#btn${i}`);
+                            if ($btn.length) {
+                                if (button.pressed) {
+                                    $btn.addClass('pressed');
+                                } else {
+                                    $btn.removeClass('pressed');
+                                }
+                            }
+                        });
+                    }
+                }, 100);
+            });
+            
+            $info.removeClass('empty').html('🎮 请按下手柄任意按键...');
+        }
+        
+        // 地理围栏
+        function setupGeofence() {
+            const $result = $('#geofenceResult');
+            
+            if (!navigator.geolocation) {
+                $result.removeClass('empty').html('❌ 不支持地理定位');
+                return;
+            }
+            
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    $result.removeClass('empty').html(`
+                        ✅ 围栏监控中<br>
+                        📍 位置: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}<br>
+                        ⏰ ${new Date().toLocaleTimeString()}
+                    `);
+                },
+                (error) => {
+                    $result.removeClass('empty').html('❌ 定位失败');
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+        
+        // 温度传感器
+        async function readTemperature() {
+            const $display = $('#tempDisplay');
+            const $info = $('#tempInfo');
+            
+            if (!('AmbientTemperatureSensor' in window)) {
+                $info.removeClass('empty').html('❌ 您的设备不支持温度传感器API（实验性功能）');
+                // 模拟温度
+                const temp = (20 + Math.random() * 10).toFixed(1);
+                $display.text(temp + '°C');
+                $info.html('💡 模拟温度（真实设备可能支持）');
+                return;
+            }
+            
+            try {
+                const sensor = new AmbientTemperatureSensor();
+                sensor.start();
+                sensor.onreading = () => {
+                    $display.text(sensor.temperature.toFixed(1) + '°C');
+                    $info.removeClass('empty').html('✅ 温度传感器已激活');
+                };
+            } catch (error) {
+                $info.removeClass('empty').html('❌ 无法读取温度');
+            }
+        }
+        
+        // 条形码扫描
+        async function scanBarcode() {
+            const $scanner = $('#barcodeScanner');
+            const $result = $('#barcodeResult');
+            
+            if (!('BarcodeDetector' in window)) {
+                $result.removeClass('empty').html('❌ 您的浏览器不支持Barcode Detection API');
+                return;
+            }
+            
+            $scanner.show();
+            $result.removeClass('empty').html('📷 扫描中...');
+            
+            setTimeout(() => {
+                $scanner.hide();
+                $result.html('💡 实际应用需配合摄像头流进行实时检测');
+            }, 3000);
+        }
+        
+        // 屏幕录制
+        async function startScreenRecording() {
+            const $info = $('#screenRecordInfo');
+            
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                DeviceAPI.state.screenRecorder = new MediaRecorder(stream);
+                DeviceAPI.state.screenChunks = [];
+                
+                DeviceAPI.state.screenRecorder.ondataavailable = (event) => {
+                    DeviceAPI.state.screenChunks.push(event.data);
+                };
+                
+                DeviceAPI.state.screenRecorder.onstop = () => {
+                    const blob = new Blob(DeviceAPI.state.screenChunks, { type: 'video/webm' });
+                    $info.removeClass('empty').html(`✅ 录屏完成<br>📦 大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                DeviceAPI.state.screenRecorder.start();
+                $info.removeClass('empty').html('🔴 正在录制屏幕...');
+            } catch (error) {
+                $info.removeClass('empty').html('❌ 录屏失败');
+            }
+        }
+        
+        function stopScreenRecording() {
+            if (DeviceAPI.state.screenRecorder && DeviceAPI.state.screenRecorder.state !== 'inactive') {
+                DeviceAPI.state.screenRecorder.stop();
+            }
+        }
+        
+        // 文件系统
+        async function openFilePicker() {
+            const $info = $('#fileSystemInfo');
+            
+            try {
+                const [fileHandle] = await window.showOpenFilePicker();
+                const file = await fileHandle.getFile();
+                
+                $info.removeClass('empty').html(`
+                    ✅ 文件已选择<br>
+                    📄 ${file.name}<br>
+                    📦 ${(file.size / 1024).toFixed(2)} KB
+                `);
+            } catch (error) {
+                $info.removeClass('empty').html('❌ 文件选择取消');
+            }
+        }
+        
+        async function saveToDisk() {
+            const $info = $('#fileSystemInfo');
+            
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: 'test.txt',
+                    types: [{
+                        description: 'Text Files',
+                        accept: { 'text/plain': ['.txt'] }
+                    }]
+                });
+                
+                const writable = await handle.createWritable();
+                await writable.write('Hello from H5 File System API!');
+                await writable.close();
+                
+                $info.removeClass('empty').html('✅ 文件已保存');
+            } catch (error) {
+                $info.removeClass('empty').html('❌ 保存取消');
+            }
+        }
+        
+        // 闲置检测
+        function detectIdle() {
+            const $result = $('#idleResult');
+            
+            if (!('IdleDetector' in window)) {
+                $result.removeClass('empty').html('❌ 您的浏览器不支持Idle Detection API');
+                return;
+            }
+            
+            const controller = new AbortController();
+            const signal = controller.signal;
+            
+            IdleDetector.requestPermission().then(state => {
+                if (state === 'granted') {
+                    const idleDetector = new IdleDetector();
+                    idleDetector.addEventListener('change', () => {
+                        $result.removeClass('empty').html(`
+                            👤 用户状态: ${idleDetector.userState}<br>
+                            🖥️ 屏幕状态: ${idleDetector.screenState}
+                        `);
+                    });
+                    idleDetector.start({ threshold: 60000, signal });
+                }
+            });
+        }
+        
+        // 后台同步
+        async function registerBackgroundSync() {
+            const $result = $('#syncResult');
+            
+            if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+                $result.removeClass('empty').html('❌ 您的浏览器不支持Background Sync API');
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.sync.register('sync-data');
+                
+                $result.removeClass('empty').html('✅ 后台同步任务已注册<br>💡 网络恢复时将自动执行');
+            } catch (error) {
+                $result.removeClass('empty').html('❌ 注册失败');
+            }
+        }
+    </script>
+</body>
+</html>

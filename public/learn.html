@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>学习资源导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 16px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.15rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* 平板和手机：强制两列布局 */
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            justify-content: space-between;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+        }
+
+        .card:active {
+            transform: translateY(-2px);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            display: block;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2d3748;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .card-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .card-link:active {
+            transform: translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            padding: 24px 20px;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 16px;
+            }
+
+            body {
+                padding: 16px 12px;
+            }
+
+            .header {
+                margin-bottom: 30px;
+                padding: 24px 0;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+                margin-bottom: 12px;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .card {
+                padding: 20px 16px;
+            }
+
+            .card-icon {
+                font-size: 2.5rem;
+                margin-bottom: 16px;
+            }
+
+            .card-title {
+                font-size: 1.15rem;
+                margin-bottom: 10px;
+            }
+
+            .card-desc {
+                font-size: 0.8rem;
+                margin-bottom: 16px;
+                line-height: 1.5;
+            }
+
+            .card-link {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 超小屏幕（小于 360px）：单列布局 */
+        @media (max-width: 360px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .card {
+                padding: 20px 16px;
+            }
+
+            .card-icon {
+                font-size: 2.2rem;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .card-desc {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 特殊样式 */
+        .card.vue {
+            border-top: 4px solid #4fc08d;
+        }
+
+        .card.react {
+            border-top: 4px solid #61dafb;
+        }
+
+        .card.rn {
+            border-top: 4px solid #61dafb;
+        }
+
+        .card.uniapp {
+            border-top: 4px solid #2b9939;
+        }
+
+        .card.taro {
+            border-top: 4px solid #faad14;
+        }
+
+        .card.miniprogram {
+            border-top: 4px solid #07c160;
+        }
+
+        .card.next {
+            border-top: 4px solid #000;
+        }
+
+        .card.node {
+            border-top: 4px solid #339933;
+        }
+
+        .card.flutter {
+            border-top: 4px solid #02569b;
+        }
+
+        .card.fullstack {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .card.qiankun {
+            border-top: 4px solid #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 学习资源导航</h1>
+            <p>精选前端、移动端、全栈开发技术文档</p>
+        </div>
+
+        <div class="grid">
+            <div class="card vue" onclick="openLink('https://cn.vuejs.org/guide/essentials/application')">
+                <span class="card-icon">🟢</span>
+                <div class="card-title">Vue.js</div>
+                <div class="card-desc">渐进式 JavaScript 框架，用于构建用户界面</div>
+                <a href="https://cn.vuejs.org/guide/essentials/application" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card react" onclick="openLink('https://reactjs.p2hp.com/learn')">
+                <span class="card-icon">⚛️</span>
+                <div class="card-title">React</div>
+                <div class="card-desc">用于构建用户界面的 JavaScript 库</div>
+                <a href="https://reactjs.p2hp.com/learn" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card rn" onclick="openLink('https://www.react-native.cn/docs/getting-started')">
+                <span class="card-icon">📱</span>
+                <div class="card-title">React Native</div>
+                <div class="card-desc">使用 React 构建原生应用的框架</div>
+                <a href="https://www.react-native.cn/docs/getting-started" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card uniapp" onclick="openLink('https://uniapp.dcloud.net.cn/')">
+                <span class="card-icon">🚀</span>
+                <div class="card-title">uni-app</div>
+                <div class="card-desc">使用 Vue.js 开发跨平台应用的前端框架</div>
+                <a href="https://uniapp.dcloud.net.cn/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card taro" onclick="openLink('https://docs.taro.zone/docs/')">
+                <span class="card-icon">⚡</span>
+                <div class="card-title">Taro</div>
+                <div class="card-desc">开放式跨端跨框架解决方案</div>
+                <a href="https://docs.taro.zone/docs/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card miniprogram" onclick="openLink('https://developers.weixin.qq.com/miniprogram/dev/framework/')">
+                <span class="card-icon">💬</span>
+                <div class="card-title">微信小程序</div>
+                <div class="card-desc">微信小程序开发框架和 API</div>
+                <a href="https://developers.weixin.qq.com/miniprogram/dev/framework/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card next" onclick="openLink('https://nextjs.freeourdays.com/nextjs14/')">
+                <span class="card-icon">▲</span>
+                <div class="card-title">Next.js</div>
+                <div class="card-desc">React 生产框架，用于构建全栈 Web 应用</div>
+                <a href="https://nextjs.freeourdays.com/nextjs14/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card node" onclick="openLink('https://nodejs.org/docs/latest/api/')">
+                <span class="card-icon">🟢</span>
+                <div class="card-title">Node.js</div>
+                <div class="card-desc">基于 Chrome V8 引擎的 JavaScript 运行时</div>
+                <a href="https://nodejs.org/docs/latest/api/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card flutter" onclick="openLink('https://docs.fluttercn.cn/')">
+                <span class="card-icon">🎯</span>
+                <div class="card-title">Flutter</div>
+                <div class="card-desc">Google 的 UI 工具包，用于构建跨平台应用</div>
+                <a href="https://docs.fluttercn.cn/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card fullstack" onclick="openLink('https://hejialianghe.github.io/guide/')">
+                <span class="card-icon">🌐</span>
+                <div class="card-title">全栈开发</div>
+                <div class="card-desc">全栈开发学习指南</div>
+                <a href="https://hejialianghe.github.io/guide/" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+
+            <div class="card qiankun" onclick="openLink('https://qiankun.umijs.org/zh/guide')">
+                <span class="card-icon">🧩</span>
+                <div class="card-title">qiankun</div>
+                <div class="card-desc">基于 single-spa 的微前端解决方案</div>
+                <a href="https://qiankun.umijs.org/zh/guide" target="_blank" class="card-link" onclick="event.stopPropagation()">查看文档 →</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 学习资源导航 | 持续更新中...</p>
+        </div>
+    </div>
+
+    <script>
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+
+        // 添加点击动画效果
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // 如果点击的是链接，不触发卡片点击
+                if (e.target.tagName === 'A') {
+                    return;
+                }
+                
+                const link = this.querySelector('.card-link');
+                if (link) {
+                    link.click();
+                }
+            });
+        });
+
+        // 添加键盘导航支持
+        document.addEventListener('keydown', function(e) {
+            const cards = document.querySelectorAll('.card');
+            let currentIndex = Array.from(cards).findIndex(card => card === document.activeElement);
+            
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % cards.length;
+                cards[currentIndex].focus();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+                cards[currentIndex].focus();
+            } else if (e.key === 'Enter' && document.activeElement.classList.contains('card')) {
+                document.activeElement.click();
+            }
+        });
+
+        // 为卡片添加可聚焦属性
+        document.querySelectorAll('.card').forEach(card => {
+            card.setAttribute('tabindex', '0');
+        });
+    </script>
+</body>
+</html>
+

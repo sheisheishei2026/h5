@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人写真作品集</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+        }
+
+        /* 分组容器 */
+        .photo-group {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+        }
+
+        /* 分组标题 */
+        .group-title {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .group-title h2 {
+            font-size: 1.8rem;
+            color: #333;
+            display: inline-block;
+            padding-bottom: 10px;
+            position: relative;
+        }
+
+        .group-title h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background-color: #667eea;
+        }
+
+        /* 3D卡片容器 - 核心 */
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            perspective: 1500px; /* 透视距离，控制3D效果强度 */
+            padding: 20px 0;
+        }
+
+        /* 3D卡片通用样式 */
+        .card {
+            width: 220px;
+            height: 160px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform-style: preserve-3d;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 卡片3D角度 - 左侧卡片向左倾斜，右侧向右倾斜 */
+        .card:nth-child(1) { transform: rotateY(15deg) translateZ(-40px) scale(0.8); }
+        .card:nth-child(2) { transform: rotateY(8deg) translateZ(-20px) scale(0.9); }
+        .card:nth-child(3) { transform: rotateY(0) translateZ(0) scale(1); z-index: 2; } /* 中间卡片突出 */
+        .card:nth-child(4) { transform: rotateY(-8deg) translateZ(-20px) scale(0.9); }
+        .card:nth-child(5) { transform: rotateY(-15deg) translateZ(-40px) scale(0.8); }
+
+        /* 鼠标悬停效果 - 所有卡片向中间聚集，增强3D交互 */
+        .cards-container:hover .card:nth-child(1) { transform: rotateY(8deg) translateZ(-20px) scale(0.8); }
+        .cards-container:hover .card:nth-child(2) { transform: rotateY(4deg) translateZ(-10px) scale(0.9); }
+        .cards-container:hover .card:nth-child(3) { transform: rotateY(0) translateZ(10px) scale(1.05); }
+        .cards-container:hover .card:nth-child(4) { transform: rotateY(-4deg) translateZ(-10px) scale(0.9); }
+        .cards-container:hover .card:nth-child(5) { transform: rotateY(-8deg) translateZ(-20px) scale(0.8); }
+
+        /* 移动端适配 - 减少角度，保证可读性 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            .group-title h2 {
+                font-size: 1.5rem;
+            }
+            .card {
+                width: 160px;
+                height: 120px;
+            }
+            .card:nth-child(1) { transform: rotateY(10deg) translateZ(-20px) scale(0.8); }
+            .card:nth-child(2) { transform: rotateY(5deg) translateZ(-10px) scale(0.9); }
+            .card:nth-child(4) { transform: rotateY(-5deg) translateZ(-10px) scale(0.9); }
+            .card:nth-child(5) { transform: rotateY(-10deg) translateZ(-20px) scale(0.8); }
+        }
+    </style>
+</head>
+<body>
+  <!--   <div class="header">
+        <h1>我的写真作品集</h1>
+    </div> -->
+
+    <!-- 北海公园组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>北海公园</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://upload-images.jianshu.io/upload_images/202169-f88d96dd9d320288.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="北海公园1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=2" alt="北海公园2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=3" alt="北海公园3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=4" alt="北海公园4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=5" alt="北海公园5"></div>
+        </div>
+    </div>
+
+    <!-- 故宫组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>故宫</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://picsum.photos/400/300?random=6" alt="故宫1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=7" alt="故宫2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=8" alt="故宫3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=9" alt="故宫4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=10" alt="故宫5"></div>
+        </div>
+    </div>
+
+    <!-- 长城组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>长城</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://picsum.photos/400/300?random=11" alt="长城1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=12" alt="长城2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=13" alt="长城3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=14" alt="长城4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=15" alt="长城5"></div>
+        </div>
+    </div>
+
+    <!-- 天安门组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>天安门</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://picsum.photos/400/300?random=16" alt="天安门1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=17" alt="天安门2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=18" alt="天安门3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=19" alt="天安门4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=20" alt="天安门5"></div>
+        </div>
+    </div>
+
+    <!-- 景山组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>景山</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://picsum.photos/400/300?random=21" alt="景山1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=22" alt="景山2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=23" alt="景山3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=24" alt="景山4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=25" alt="景山5"></div>
+        </div>
+    </div>
+
+    <!-- 前门组 -->
+    <div class="photo-group">
+        <div class="group-title">
+            <h2>前门</h2>
+        </div>
+        <div class="cards-container">
+            <div class="card"><img src="https://picsum.photos/400/300?random=26" alt="前门1"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=27" alt="前门2"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=28" alt="前门3"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=29" alt="前门4"></div>
+            <div class="card"><img src="https://picsum.photos/400/300?random=30" alt="前门5"></div>
+        </div>
+    </div>
+
+    <script>
+        // 点击卡片放大预览
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                const imgSrc = card.querySelector('img').src;
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.9);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 100;
+                    cursor: zoom-out;
+                    padding: 20px;
+                `;
+                const previewImg = document.createElement('img');
+                previewImg.src = imgSrc;
+                previewImg.style.cssText = `
+                    max-width: 90%;
+                    max-height: 90%;
+                    border-radius: 8px;
+                    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+                    transform: scale(0.9);
+                    opacity: 0;
+                    transition: all 0.3s ease;
+                `;
+                overlay.appendChild(previewImg);
+                document.body.appendChild(overlay);
+                document.body.style.overflow = 'hidden'; // 禁止背景滚动
+
+                // 触发动画
+                setTimeout(() => {
+                    previewImg.style.transform = 'scale(1)';
+                    previewImg.style.opacity = '1';
+                }, 10);
+
+                // 关闭预览
+                overlay.addEventListener('click', () => {
+                    previewImg.style.transform = 'scale(0.9)';
+                    previewImg.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.remove();
+                        document.body.style.overflow = '';
+                    }, 300);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -366,7 +366,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
             padding: 20px;
             text-align: center;
             transition: all 0.3s ease;
@@ -1572,7 +1572,7 @@
         // 设备方向 - jQuery版本
         function startOrientation() {
             if (orientationActive) return;
-            
+
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
@@ -1597,11 +1597,11 @@
             const alpha = event.alpha || 0;
             const beta = event.beta || 0;
             const gamma = event.gamma || 0;
-            
+
             $('#alpha').text(alpha.toFixed(1) + '°');
             $('#beta').text(beta.toFixed(1) + '°');
             $('#gamma').text(gamma.toFixed(1) + '°');
-            
+
             // 3D可视化效果
             $('#gyroVisual').css('transform', `rotateX(${beta}deg) rotateY(${gamma}deg) rotateZ(${alpha}deg)`);
         }
@@ -1610,11 +1610,11 @@
             const orientation = window.screen.orientation || {};
             const type = orientation.type || window.orientation;
             let text = '竖屏';
-            
+
             if (type.toString().includes('landscape') || type === 90 || type === -90) {
                 text = '横屏';
             }
-            
+
             $('#screenOrientation').text(text);
         }
 
@@ -1698,7 +1698,7 @@
         function getDeviceInfo() {
             const $info = $('#deviceInfo');
             $info.attr('class', 'result-box');
-            
+
             const ua = navigator.userAgent;
             const platform = navigator.platform;
             const language = navigator.language;
@@ -1729,7 +1729,7 @@
             $info.attr('class', 'result-box');
 
             const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            
+
             if (!connection) {
                 $info.html('❌ 您的浏览器不支持网络信息API');
                 return;
@@ -1747,16 +1747,16 @@
                 💾 <strong>省流量模式:</strong> ${saveData}<br>
                 ${navigator.onLine ? '✅ 在线' : '❌ 离线'}
             `);
-            
+
             // 更新统计显示
             $('#pingTime').text(rtt);
             $('#downSpeed').text(downlink + ' Mbps');
         }
-        
+
         // 监听网络状态变化
         window.addEventListener('online', updateConnectionStatus);
         window.addEventListener('offline', updateConnectionStatus);
-        
+
         function updateConnectionStatus() {
             const $status = $('#connectionStatus');
             if (navigator.onLine) {
@@ -1770,7 +1770,7 @@
         // 剪贴板 - jQuery版本
         async function copyToClipboard() {
             const text = '这是通过H5 Clipboard API复制的文本 📋';
-            
+
             try {
                 await navigator.clipboard.writeText(text);
                 const $result = $('#clipboardResult');
@@ -1840,7 +1840,7 @@
 
         function toggleSpeech() {
             const $btn = $('#speechBtn');
-            
+
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert('您的浏览器不支持语音识别API');
                 return;
@@ -1914,7 +1914,7 @@
         // 全屏模式 - jQuery版本
         function toggleFullscreen() {
             const elem = document.documentElement;
-            
+
             if (!document.fullscreenElement) {
                 if (elem.requestFullscreen) {
                     elem.requestFullscreen();
@@ -2059,7 +2059,7 @@
         // 屏幕亮度（部分浏览器支持）
         async function adjustBrightness() {
             const result = document.getElementById('brightnessResult');
-            
+
             if ('screen' in window && 'brightness' in window.screen) {
                 try {
                     const brightness = await window.screen.brightness;
@@ -2085,7 +2085,7 @@
         function handleScroll() {
             const $header = $('#pageHeader');
             const scrollTop = $(window).scrollTop();
-            
+
             // 标题栏滚动联动
             if (scrollTop > 50) {
                 $header.addClass('scrolled');
@@ -2097,7 +2097,7 @@
             const winHeight = $(document).height() - $(window).height();
             const scrolled = (scrollTop / winHeight) * 100;
             $('#scrollProgress').css('height', scrolled + '%');
-            
+
             // 更新统计
             $('#scrollDistance').text(scrollTop.toFixed(0));
         }
@@ -2124,7 +2124,7 @@
             touchInfo.className = 'result-box';
             touchInfo.innerHTML = `
                 👆 <strong>触摸点数:</strong> ${touches.length}<br>
-                ${Array.from(touches).map((touch, i) => 
+                ${Array.from(touches).map((touch, i) =>
                     `<strong>点${i+1}:</strong> X:${touch.clientX.toFixed(0)}, Y:${touch.clientY.toFixed(0)}`
                 ).join('<br>')}
             `;
@@ -2284,13 +2284,13 @@
                 lightSensor.addEventListener('reading', () => {
                     const lux = lightSensor.illuminance;
                     document.getElementById('lightValue').textContent = lux.toFixed(0) + ' lux';
-                    
+
                     let status = '';
                     if (lux < 50) status = '😴 黑暗';
                     else if (lux < 200) status = '🌙 昏暗';
                     else if (lux < 1000) status = '💡 正常';
                     else status = '☀️ 明亮';
-                    
+
                     document.getElementById('lightStatus').textContent = status;
                 });
                 lightSensor.start();
@@ -2308,7 +2308,7 @@
         // 距离传感器
         function startProximitySensor() {
             const result = document.getElementById('proximityResult');
-            
+
             if (!('ProximitySensor' in window)) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的设备不支持距离传感器API（实验性功能）';
@@ -2407,14 +2407,14 @@
         function getPerformanceInfo() {
             const $result = $('#performanceResult');
             $result.removeClass('empty');
-            
+
             const memory = performance.memory || {};
             const navigation = performance.navigation;
             const timing = performance.timing;
-            
+
             const loadTime = timing.loadEventEnd - timing.navigationStart;
             const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
-            
+
             $result.html(`
                 🧠 <strong>JS内存:</strong> ${(memory.usedJSHeapSize / 1048576).toFixed(2)} MB / ${(memory.totalJSHeapSize / 1048576).toFixed(2)} MB<br>
                 ⚡ <strong>页面加载:</strong> ${loadTime}ms<br>
@@ -2424,44 +2424,44 @@
                 🎨 <strong>渲染帧率:</strong> ~60 FPS
             `);
         }
-        
+
         // 视频录制
         async function startVideoRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 DeviceAPI.state.mediaRecorder = new MediaRecorder(stream);
                 DeviceAPI.state.recordedChunks = [];
-                
+
                 DeviceAPI.state.mediaRecorder.ondataavailable = (event) => {
                     if (event.data.size > 0) {
                         DeviceAPI.state.recordedChunks.push(event.data);
                     }
                 };
-                
+
                 DeviceAPI.state.mediaRecorder.onstop = () => {
                     const blob = new Blob(DeviceAPI.state.recordedChunks, { type: 'video/webm' });
                     const $videoPreview = $('#videoPreview');
                     $videoPreview.attr('src', URL.createObjectURL(blob)).addClass('show');
-                    
+
                     const $info = $('#videoInfo');
                     $info.removeClass('empty').html(`✅ 录制完成<br>📦 大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
-                    
+
                     stream.getTracks().forEach(track => track.stop());
                 };
-                
+
                 DeviceAPI.state.mediaRecorder.start();
                 $('#videoInfo').html('🔴 正在录制视频...');
             } catch (error) {
                 alert('无法访问摄像头: ' + error.message);
             }
         }
-        
+
         function stopVideoRecording() {
             if (DeviceAPI.state.mediaRecorder && DeviceAPI.state.mediaRecorder.state !== 'inactive') {
                 DeviceAPI.state.mediaRecorder.stop();
             }
         }
-        
+
         // 音频录制
         async function startAudioRecording() {
             try {
@@ -2469,25 +2469,25 @@
                 DeviceAPI.state.audioRecorder = new MediaRecorder(DeviceAPI.state.audioStream);
                 DeviceAPI.state.audioChunks = [];
                 DeviceAPI.state.recordingStartTime = Date.now();
-                
+
                 DeviceAPI.state.audioRecorder.ondataavailable = (event) => {
                     DeviceAPI.state.audioChunks.push(event.data);
                 };
-                
+
                 DeviceAPI.state.audioRecorder.onstop = () => {
                     const blob = new Blob(DeviceAPI.state.audioChunks, { type: 'audio/webm' });
                     window.audioBlob = blob;
-                    
+
                     const duration = ((Date.now() - DeviceAPI.state.recordingStartTime) / 1000).toFixed(1);
                     const $info = $('#audioInfo');
                     $info.removeClass('empty').html(`✅ 录音完成<br>⏱️ 时长: ${duration}s<br>📦 大小: ${(blob.size / 1024).toFixed(2)} KB`);
-                    
+
                     clearInterval(DeviceAPI.state.recordingTimer);
                 };
-                
+
                 DeviceAPI.state.audioRecorder.start();
                 $('#audioInfo').html('🔴 正在录音: 0s');
-                
+
                 DeviceAPI.state.recordingTimer = setInterval(() => {
                     const duration = ((Date.now() - DeviceAPI.state.recordingStartTime) / 1000).toFixed(0);
                     $('#audioInfo').html(`🔴 正在录音: ${duration}s`);
@@ -2496,7 +2496,7 @@
                 alert('无法访问麦克风: ' + error.message);
             }
         }
-        
+
         function pauseAudioRecording() {
             if (DeviceAPI.state.audioRecorder && DeviceAPI.state.audioRecorder.state === 'recording') {
                 DeviceAPI.state.audioRecorder.pause();
@@ -2510,7 +2510,7 @@
                 }, 1000);
             }
         }
-        
+
         function stopAudioRecording() {
             if (DeviceAPI.state.audioRecorder && DeviceAPI.state.audioRecorder.state !== 'inactive') {
                 DeviceAPI.state.audioRecorder.stop();
@@ -2519,7 +2519,7 @@
                 }
             }
         }
-        
+
         function playAudio() {
             if (window.audioBlob) {
                 const audio = new Audio(URL.createObjectURL(window.audioBlob));
@@ -2528,61 +2528,61 @@
                 alert('请先录制音频');
             }
         }
-        
+
         // 键盘监听
         const keyboardInput = document.getElementById('keyboardInput');
         const keyboardInfo = document.getElementById('keyboardInfo');
-        
+
         keyboardInput.addEventListener('focus', () => {
             keyboardInfo.textContent = '⌨️ 虚拟键盘已打开';
         });
-        
+
         keyboardInput.addEventListener('blur', () => {
             keyboardInfo.textContent = '键盘已关闭';
         });
-        
+
         keyboardInput.addEventListener('input', (e) => {
             keyboardInfo.innerHTML = `
                 📝 输入内容: "${e.target.value}"<br>
                 📏 长度: ${e.target.value.length} 字符
             `;
         });
-        
+
         // 页面统计
         let totalTouches = 0;
         let pageStartTime = Date.now();
-        
+
         document.addEventListener('touchstart', () => {
             totalTouches++;
             document.getElementById('touchCount').textContent = totalTouches;
         });
-        
+
         window.addEventListener('scroll', () => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             document.getElementById('scrollDistance').textContent = scrollTop.toFixed(0);
         });
-        
+
         setInterval(() => {
             const timeOnPage = ((Date.now() - pageStartTime) / 1000).toFixed(0);
             document.getElementById('timeOnPage').textContent = timeOnPage + 's';
         }, 1000);
-        
+
         // 蓝牙设备
         async function scanBluetooth() {
             const result = document.getElementById('bluetoothDevices');
-            
+
             if (!navigator.bluetooth) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的浏览器不支持Web Bluetooth API';
                 return;
             }
-            
+
             try {
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: ['battery_service']
                 });
-                
+
                 result.className = 'result-box';
                 result.innerHTML = `
                     <div class="bluetooth-device">
@@ -2598,24 +2598,24 @@
                 result.innerHTML = '❌ 蓝牙扫描取消或失败';
             }
         }
-        
+
         // NFC读写
         async function readNFC() {
             const result = document.getElementById('nfcResult');
-            
+
             if (!('NDEFReader' in window)) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的设备不支持Web NFC API';
                 return;
             }
-            
+
             try {
                 const ndef = new NDEFReader();
                 await ndef.scan();
-                
+
                 result.className = 'result-box';
                 result.innerHTML = '📱 正在等待NFC标签...';
-                
+
                 ndef.addEventListener('reading', ({ message, serialNumber }) => {
                     result.innerHTML = `
                         <div class="nfc-tag">
@@ -2629,13 +2629,13 @@
                 result.innerHTML = '❌ NFC读取失败: ' + error.message;
             }
         }
-        
+
         async function writeNFC() {
             if (!('NDEFReader' in window)) {
                 alert('您的设备不支持Web NFC');
                 return;
             }
-            
+
             try {
                 const ndef = new NDEFReader();
                 await ndef.write('Hello from Web NFC!');
@@ -2644,21 +2644,21 @@
                 alert('NFC写入失败');
             }
         }
-        
+
         // USB设备
         async function connectUSB() {
             const result = document.getElementById('usbDevices');
-            
+
             if (!navigator.usb) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的浏览器不支持WebUSB API';
                 return;
             }
-            
+
             try {
                 const device = await navigator.usb.requestDevice({ filters: [] });
                 await device.open();
-                
+
                 result.className = 'result-box';
                 result.innerHTML = `
                     <div class="usb-device">
@@ -2672,36 +2672,36 @@
                 result.innerHTML = '❌ USB连接取消或失败';
             }
         }
-        
+
         // Web支付
         async function requestPayment() {
             const result = document.getElementById('paymentResult');
-            
+
             if (!window.PaymentRequest) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的浏览器不支持Payment Request API';
                 return;
             }
-            
+
             const methodData = [{
                 supportedMethods: 'basic-card',
                 data: {
                     supportedNetworks: ['visa', 'mastercard']
                 }
             }];
-            
+
             const details = {
                 total: {
                     label: '测试商品',
                     amount: { currency: 'CNY', value: '0.01' }
                 }
             };
-            
+
             try {
                 const request = new PaymentRequest(methodData, details);
                 const response = await request.show();
                 await response.complete('success');
-                
+
                 result.className = 'result-box';
                 result.innerHTML = `
                     <div class="payment-status">
@@ -2714,21 +2714,21 @@
                 result.innerHTML = '❌ 支付取消或失败';
             }
         }
-        
+
         // 联系人选择
         async function pickContact() {
             const result = document.getElementById('contactResult');
-            
+
             if (!('contacts' in navigator)) {
                 result.className = 'result-box';
                 result.innerHTML = '❌ 您的浏览器不支持Contact Picker API';
                 return;
             }
-            
+
             try {
                 const props = ['name', 'tel'];
                 const contacts = await navigator.contacts.select(props, { multiple: false });
-                
+
                 if (contacts.length > 0) {
                     const contact = contacts[0];
                     result.className = 'result-box';
@@ -2744,30 +2744,30 @@
                 result.innerHTML = '❌ 联系人选择取消';
             }
         }
-        
+
         // 压力感应
         function handlePressure(e) {
             e.preventDefault();
             const touch = e.originalEvent.touches[0];
             const force = touch.force || 0;
             const pressure = (force * 100).toFixed(0);
-            
+
             $('#pressureFill').css('width', pressure + '%').text(pressure + '%');
         }
-        
+
         // 游戏手柄
         function connectGamepad() {
             const $info = $('#gamepadInfo');
             const $buttons = $('#gamepadButtons');
-            
+
             window.addEventListener('gamepadconnected', (e) => {
                 $info.removeClass('empty').html(`✅ 手柄已连接: ${e.gamepad.id}`);
                 $buttons.show();
-                
+
                 DeviceAPI.state.gamepadInterval = setInterval(() => {
                     const gamepads = navigator.getGamepads();
                     const gamepad = gamepads[0];
-                    
+
                     if (gamepad) {
                         gamepad.buttons.forEach((button, i) => {
                             const $btn = $(`#btn${i}`);
@@ -2782,19 +2782,19 @@
                     }
                 }, 100);
             });
-            
+
             $info.removeClass('empty').html('🎮 请按下手柄任意按键...');
         }
-        
+
         // 地理围栏
         function setupGeofence() {
             const $result = $('#geofenceResult');
-            
+
             if (!navigator.geolocation) {
                 $result.removeClass('empty').html('❌ 不支持地理定位');
                 return;
             }
-            
+
             navigator.geolocation.watchPosition(
                 (position) => {
                     $result.removeClass('empty').html(`
@@ -2809,12 +2809,12 @@
                 { enableHighAccuracy: true }
             );
         }
-        
+
         // 温度传感器
         async function readTemperature() {
             const $display = $('#tempDisplay');
             const $info = $('#tempInfo');
-            
+
             if (!('AmbientTemperatureSensor' in window)) {
                 $info.removeClass('empty').html('❌ 您的设备不支持温度传感器API（实验性功能）');
                 // 模拟温度
@@ -2823,7 +2823,7 @@
                 $info.html('💡 模拟温度（真实设备可能支持）');
                 return;
             }
-            
+
             try {
                 const sensor = new AmbientTemperatureSensor();
                 sensor.start();
@@ -2835,66 +2835,66 @@
                 $info.removeClass('empty').html('❌ 无法读取温度');
             }
         }
-        
+
         // 条形码扫描
         async function scanBarcode() {
             const $scanner = $('#barcodeScanner');
             const $result = $('#barcodeResult');
-            
+
             if (!('BarcodeDetector' in window)) {
                 $result.removeClass('empty').html('❌ 您的浏览器不支持Barcode Detection API');
                 return;
             }
-            
+
             $scanner.show();
             $result.removeClass('empty').html('📷 扫描中...');
-            
+
             setTimeout(() => {
                 $scanner.hide();
                 $result.html('💡 实际应用需配合摄像头流进行实时检测');
             }, 3000);
         }
-        
+
         // 屏幕录制
         async function startScreenRecording() {
             const $info = $('#screenRecordInfo');
-            
+
             try {
                 const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 DeviceAPI.state.screenRecorder = new MediaRecorder(stream);
                 DeviceAPI.state.screenChunks = [];
-                
+
                 DeviceAPI.state.screenRecorder.ondataavailable = (event) => {
                     DeviceAPI.state.screenChunks.push(event.data);
                 };
-                
+
                 DeviceAPI.state.screenRecorder.onstop = () => {
                     const blob = new Blob(DeviceAPI.state.screenChunks, { type: 'video/webm' });
                     $info.removeClass('empty').html(`✅ 录屏完成<br>📦 大小: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
                     stream.getTracks().forEach(track => track.stop());
                 };
-                
+
                 DeviceAPI.state.screenRecorder.start();
                 $info.removeClass('empty').html('🔴 正在录制屏幕...');
             } catch (error) {
                 $info.removeClass('empty').html('❌ 录屏失败');
             }
         }
-        
+
         function stopScreenRecording() {
             if (DeviceAPI.state.screenRecorder && DeviceAPI.state.screenRecorder.state !== 'inactive') {
                 DeviceAPI.state.screenRecorder.stop();
             }
         }
-        
+
         // 文件系统
         async function openFilePicker() {
             const $info = $('#fileSystemInfo');
-            
+
             try {
                 const [fileHandle] = await window.showOpenFilePicker();
                 const file = await fileHandle.getFile();
-                
+
                 $info.removeClass('empty').html(`
                     ✅ 文件已选择<br>
                     📄 ${file.name}<br>
@@ -2904,10 +2904,10 @@
                 $info.removeClass('empty').html('❌ 文件选择取消');
             }
         }
-        
+
         async function saveToDisk() {
             const $info = $('#fileSystemInfo');
-            
+
             try {
                 const handle = await window.showSaveFilePicker({
                     suggestedName: 'test.txt',
@@ -2916,29 +2916,29 @@
                         accept: { 'text/plain': ['.txt'] }
                     }]
                 });
-                
+
                 const writable = await handle.createWritable();
                 await writable.write('Hello from H5 File System API!');
                 await writable.close();
-                
+
                 $info.removeClass('empty').html('✅ 文件已保存');
             } catch (error) {
                 $info.removeClass('empty').html('❌ 保存取消');
             }
         }
-        
+
         // 闲置检测
         function detectIdle() {
             const $result = $('#idleResult');
-            
+
             if (!('IdleDetector' in window)) {
                 $result.removeClass('empty').html('❌ 您的浏览器不支持Idle Detection API');
                 return;
             }
-            
+
             const controller = new AbortController();
             const signal = controller.signal;
-            
+
             IdleDetector.requestPermission().then(state => {
                 if (state === 'granted') {
                     const idleDetector = new IdleDetector();
@@ -2952,20 +2952,20 @@
                 }
             });
         }
-        
+
         // 后台同步
         async function registerBackgroundSync() {
             const $result = $('#syncResult');
-            
+
             if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
                 $result.removeClass('empty').html('❌ 您的浏览器不支持Background Sync API');
                 return;
             }
-            
+
             try {
                 const registration = await navigator.serviceWorker.ready;
                 await registration.sync.register('sync-data');
-                
+
                 $result.removeClass('empty').html('✅ 后台同步任务已注册<br>💡 网络恢复时将自动执行');
             } catch (error) {
                 $result.removeClass('empty').html('❌ 注册失败');
